@@ -16,8 +16,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
-def get_all_records():
+@app.get("/denuncias")
+def get_all_records(street_category: Union[str, None] = None):
 
     config = dotenv_values(".env")
 
@@ -31,18 +31,29 @@ def get_all_records():
         "denuncias": []
     }
 
-    for denuncia in denuncia_collection.find():
-        denuncia_json["denuncias"].append({
-            'street_category': denuncia['street_category'], 
-            'image_url': denuncia['image_url'], 
-            'street_coords': {'lat': denuncia['street_coords']['lat'], 'lng': denuncia['street_coords']['lng']}, 
-            'opt_address': denuncia['opt_address'], 
-            'opt_user_comment': denuncia['opt_user_comment'], 
-            'upload_date': denuncia['upload_date']
-        })
+    if street_category:
+        for denuncia in denuncia_collection.find({ "street_category": street_category }):
+            denuncia_json["denuncias"].append({
+                'street_category': denuncia['street_category'], 
+                'image_url': denuncia['image_url'], 
+                'street_coords': {'lat': denuncia['street_coords']['lat'], 'lng': denuncia['street_coords']['lng']}, 
+                'opt_address': denuncia['opt_address'], 
+                'opt_user_comment': denuncia['opt_user_comment'], 
+                'upload_date': denuncia['upload_date']
+            })
        
-    return denuncia_json
-
-
-
+        return denuncia_json
+    
+    else:
+        for denuncia in denuncia_collection.find():
+            denuncia_json["denuncias"].append({
+                'street_category': denuncia['street_category'], 
+                'image_url': denuncia['image_url'], 
+                'street_coords': {'lat': denuncia['street_coords']['lat'], 'lng': denuncia['street_coords']['lng']}, 
+                'opt_address': denuncia['opt_address'], 
+                'opt_user_comment': denuncia['opt_user_comment'], 
+                'upload_date': denuncia['upload_date']
+            })
+        
+        return denuncia_json
 
