@@ -1,9 +1,13 @@
+import pydantic
 from typing import Union
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import dotenv_values
+from bson import ObjectId
+
+pydantic.json.ENCODERS_BY_TYPE[ObjectId] = str
 
 app = FastAPI()
 
@@ -34,12 +38,14 @@ def get_all_records(street_category: Union[str, None] = None):
     if street_category:
         for denuncia in denuncia_collection.find({ "street_category": street_category }):
             denuncia_json["denuncias"].append({
+                'id': denuncia['_id'],
                 'street_category': denuncia['street_category'], 
                 'image_url': denuncia['image_url'], 
                 'street_coords': {'lat': denuncia['street_coords']['lat'], 'lng': denuncia['street_coords']['lng']}, 
                 'opt_address': denuncia['opt_address'], 
                 'opt_user_comment': denuncia['opt_user_comment'], 
-                'upload_date': denuncia['upload_date']
+                'upload_date': denuncia['upload_date'],
+                'street_status': { 'broken': denuncia['street_status']['broken'], 'fixed_by': denuncia['street_status']['fixed_by'] }
             })
        
         return denuncia_json
@@ -47,12 +53,14 @@ def get_all_records(street_category: Union[str, None] = None):
     else:
         for denuncia in denuncia_collection.find():
             denuncia_json["denuncias"].append({
+                'id': denuncia['_id'],
                 'street_category': denuncia['street_category'], 
                 'image_url': denuncia['image_url'], 
                 'street_coords': {'lat': denuncia['street_coords']['lat'], 'lng': denuncia['street_coords']['lng']}, 
                 'opt_address': denuncia['opt_address'], 
                 'opt_user_comment': denuncia['opt_user_comment'], 
-                'upload_date': denuncia['upload_date']
+                'upload_date': denuncia['upload_date'],
+                'street_status': { 'broken': denuncia['street_status']['broken'], 'fixed_by': denuncia['street_status']['fixed_by'] }
             })
         
         return denuncia_json
